@@ -142,6 +142,9 @@ Sinta-se à vontade para abrir issues ou enviar pull requests.
 
 ---
 
-## 📄 Licença
+## 📸 Preview do Projeto
+<img width="908" height="882" alt="image" src="https://github.com/user-attachments/assets/5c8900af-17bc-46d7-a9b2-be6488fa6a35" />
 
-Este projeto está sob a licença MIT.
+<img width="740" height="867" alt="image" src="https://github.com/user-attachments/assets/c05b34d7-29ce-429b-9df4-f2cdd39849e8" />
+
+
