@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadClean — Removedor de Duplicatas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div>
+      <div class="logo">Lead<span>Clean</span></div>
+      <div class="logo-sub">// removedor de duplicatas & análise de DDD</div>
+    </div>
+    <div class="version-badge">v2.0 · client-side</div>
+  </header>
+
+  <!-- Mode Tabs -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tabDedup" onclick="switchTab('dedup')">
+      <span class="mode-tab-icon">🧹</span> Remover Duplicatas
+    </div>
+    <div class="mode-tab" id="tabDDD" onclick="switchTab('ddd')">
+      <span class="mode-tab-icon">📍</span> Análise por DDD / Estado
+    </div>
+  </div>
+
+  <!-- ======================== TAB: DEDUP ======================== -->
+  <div class="tab-panel active" id="panelDedup">
+
+    <div class="steps" id="stepsBar">
+      <div class="step active" id="step1"><div class="step-num">1</div> Carregar arquivo</div>
+      <div class="step" id="step2"><div class="step-num">2</div> Configurar</div>
+      <div class="step" id="step3"><div class="step-num">3</div> Analisar</div>
+      <div class="step" id="step4"><div class="step-num">4</div> Exportar</div>
+    </div>
+
+    <div class="card" id="cardUpload">
+      <div class="card-title">Arquivo de leads</div>
+      <div class="card-sub">Suporta .xlsx, .xls e .csv — processado localmente, nada é enviado à internet.</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+        <span class="drop-icon">📂</span>
+        <div class="drop-big">Arraste o arquivo aqui</div>
+        <div class="drop-small">ou clique para selecionar · .xlsx .xls .csv</div>
+      </div>
+      <div class="file-loaded hidden" id="fileLoaded">
+        <span class="file-icon">📊</span>
+        <span class="file-name" id="fileName"></span>
+        <span class="file-change" onclick="resetFile()">trocar arquivo</span>
+      </div>
+    </div>
+
+    <div class="card hidden" id="cardConfig">
+      <div class="card-title">Colunas identificadoras</div>
+      <div class="card-sub">Selecione quais colunas definem um lead único. Linhas com os mesmos valores nessas colunas serão consideradas duplicatas.</div>
+      <div class="cols-grid" id="colsGrid"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:1.75rem 0">
+
+      <div class="card-title">Qual ocorrência manter?</div>
+      <div class="card-sub" style="margin-bottom:1rem">Ao encontrar duplicatas, escolha qual registro permanece no arquivo final.</div>
+      <div class="mode-row">
+        <div class="mode-card active" id="modeFirst" onclick="setMode('first')">
+          <div class="mode-card-title">Primeira ocorrência</div>
+          <div class="mode-card-sub">Mantém o registro mais antigo da lista</div>
+        </div>
+        <div class="mode-card" id="modeLast" onclick="setMode('last')">
+          <div class="mode-card-title">Última ocorrência</div>
+          <div class="mode-card-sub">Mantém o registro mais recente da lista</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem" class="btn-row">
+        <button class="btn primary" id="btnAnalyze" onclick="analyze()" disabled>Analisar duplicatas →</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="cardResults">
+      <div class="card-title">Resultado da análise</div>
+      <div class="alert" id="alertMsg"></div>
+
+      <div class="stats-row" id="statsRow">
+        <div class="stat"><div class="stat-num" id="stTotal">—</div><div class="stat-label">Total linhas</div></div>
+        <div class="stat danger"><div class="stat-num" id="stDup">—</div><div class="stat-label">Duplicatas</div></div>
+        <div class="stat good"><div class="stat-num" id="stClean">—</div><div class="stat-label">Únicas</div></div>
+        <div class="stat info"><div class="stat-num" id="stPct">—</div><div class="stat-label">% redução</div></div>
+      </div>
+
+      <div class="table-wrap" id="tableWrap"></div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;" id="tableNote"></div>
+
+      <div class="btn-row" style="margin-top:1.5rem">
+        <button class="btn primary" id="btnExport" onclick="exportClean()" disabled>⬇ Baixar leads_limpos.xlsx</button>
+        <button class="btn" onclick="resetAll()">Novo arquivo</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================== TAB: DDD ======================== -->
+  <div class="tab-panel" id="panelDDD">
+
+    <div class="card" id="cardDDDUpload">
+      <div class="card-title">Arquivo de leads para análise de DDD</div>
+      <div class="card-sub">Carregue uma planilha com uma coluna de telefone ou DDD. O sistema identificará automaticamente os estados brasileiros.</div>
+      <div class="drop-zone" id="dropZoneDDD">
+        <input type="file" id="fileInputDDD" accept=".xlsx,.xls,.csv">
+        <span class="drop-icon">📍</span>
+        <div class="drop-big">Arraste o arquivo aqui</div>
+        <div class="drop-small">ou clique para selecionar · .xlsx .xls .csv</div>
+      </div>
+      <div class="file-loaded hidden" id="fileLoadedDDD">
+        <span class="file-icon">📊</span>
+        <span class="file-name" id="fileNameDDD"></span>
+        <span class="file-change" onclick="resetDDD()">trocar arquivo</span>
+      </div>
+    </div>
+
+    <div class="card hidden" id="cardDDDConfig">
+      <div class="card-title">Selecionar coluna de telefone/DDD</div>
+      <div class="card-sub">Escolha a coluna que contém o número de telefone ou o DDD dos leads.</div>
+      <div class="ddd-col-selector">
+        <span>Coluna:</span>
+        <select id="dddColSelect" onchange="runDDDAnalysis()">
+          <option value="">— selecione —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card hidden" id="cardDDDResults">
+      <div class="ddd-header-row">
+        <div class="card-title" style="margin-bottom:0">Distribuição por Estado</div>
+        <div style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;" id="dddSourceNote"></div>
+      </div>
+
+      <div class="ddd-stats-row" style="margin-top:1rem">
+        <div class="stat"><div class="stat-num" id="dddTotal">—</div><div class="stat-label">Total leads</div></div>
+        <div class="stat good"><div class="stat-num" id="dddEstados">—</div><div class="stat-label">Estados</div></div>
+        <div class="stat info"><div class="stat-num" id="dddTopEstado">—</div><div class="stat-label">Estado líder</div></div>
+      </div>
+
+      <div class="ddd-table-wrap" id="dddTableWrap"></div>
+      <div class="unknown-note hidden" id="dddUnknownNote"></div>
+
+      <div class="ddd-export-row">
+        <button class="btn primary" onclick="exportDDDReport()">⬇ Exportar relatório .xlsx</button>
+        <button class="btn" onclick="resetDDD()">Novo arquivo</button>
+      </div>
+    </div>
+
+    <div class="card" id="cardDDDPlaceholder">
+      <div class="ddd-placeholder">
+        <div class="ddd-placeholder-icon">🗺️</div>
+        <div class="ddd-placeholder-title">Análise de DDD por Estado</div>
+        <div class="ddd-placeholder-sub">Carregue uma planilha acima para identificar quantos leads são de cada estado brasileiro.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>LeadClean · processamento 100% local · sem upload de dados</span>
+    <span>XLSX.js · MIT</span>
+  </footer>
+</div>
+
+<script src="duplicata.js"></script>
+<script src="ddd.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

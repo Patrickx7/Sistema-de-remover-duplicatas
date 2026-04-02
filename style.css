@@ -1,0 +1,530 @@
+/* ============================================================
+   style.css — LeadClean v2.0
+   Estrutura:
+     1. Reset & Variáveis
+     2. Base
+     3. Layout
+     4. Header
+     5. Tabs de modo
+     6. Steps
+     7. Card
+     8. Drop Zone
+     9. Seletor de colunas
+    10. Seletor de modo (primeira/última)
+    11. Estatísticas
+    12. Tabela
+    13. Badges
+    14. Botões
+    15. Alertas
+    16. Módulo DDD
+    17. Footer
+    18. Utilitários
+    19. Animações
+    20. Responsivo
+   ============================================================ */
+
+/* ── 1. Reset & Variáveis ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE6;
+  --border: #E2DED5;
+  --border2: #CCC8BE;
+  --text: #1A1714;
+  --text2: #6B6560;
+  --text3: #A39D96;
+  --accent: #2D5A3D;
+  --accent-light: #EBF3EE;
+  --accent-border: #B8D9C3;
+  --danger: #8B2020;
+  --danger-light: #FBF0F0;
+  --danger-border: #E8C0C0;
+  --warn: #7A4F1A;
+  --warn-light: #FEF6ED;
+  --blue: #1A3A6B;
+  --blue-light: #EEF2FB;
+  --blue-border: #BFD0EF;
+}
+
+/* ── 2. Base ── */
+html { font-size: 16px; }
+body {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── 3. Layout ── */
+.shell {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 2rem 5rem;
+}
+
+/* ── 4. Header ── */
+header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.logo span { color: var(--accent); font-style: italic; }
+.logo-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text3);
+  margin-top: 2px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
+}
+.version-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--text3);
+  border: 1px solid var(--border);
+}
+
+/* ── 5. Tabs de modo ── */
+.mode-tabs {
+  display: flex;
+  margin-bottom: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.mode-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+  transition: all 0.2s;
+  background: var(--surface);
+  user-select: none;
+}
+.mode-tab:last-child { border-right: none; }
+.mode-tab:hover { background: var(--surface2); color: var(--text2); }
+.mode-tab.active { background: var(--accent-light); color: var(--accent); }
+.mode-tab-icon { font-size: 15px; }
+
+/* Tab panels */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── 6. Steps ── */
+.steps {
+  display: flex;
+  margin-bottom: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--text3);
+  border-right: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.step:last-child { border-right: none; }
+.step.active { color: var(--accent); background: var(--accent-light); }
+.step.done { color: var(--text2); }
+.step-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--surface2);
+  color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.step.active .step-num { background: var(--accent); color: #fff; }
+.step.done .step-num { background: var(--accent-light); color: var(--accent); }
+
+/* ── 7. Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.25rem;
+}
+.card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.card-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 1.5rem;
+  font-weight: 300;
+}
+
+/* ── 8. Drop Zone ── */
+.drop-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: 10px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.drop-zone:hover,
+.drop-zone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.drop-zone input { display: none; }
+.drop-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+.drop-big { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+.drop-small { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+.file-loaded {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--accent);
+}
+.file-icon { font-size: 20px; }
+.file-name { font-family: 'DM Mono', monospace; font-weight: 500; flex: 1; }
+.file-change {
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+/* ── 9. Seletor de colunas ── */
+.cols-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.col-chip {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  font-size: 13px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text2);
+  transition: all 0.15s;
+  user-select: none;
+  font-family: 'DM Mono', monospace;
+}
+.col-chip:hover { border-color: var(--accent); color: var(--accent); }
+.col-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.col-chip .check { font-size: 10px; display: none; }
+.col-chip.active .check { display: inline; }
+
+/* ── 10. Seletor de modo (primeira/última) ── */
+.mode-row { display: flex; gap: 10px; }
+.mode-card {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface);
+}
+.mode-card:hover { border-color: var(--border2); }
+.mode-card.active { border-color: var(--accent); background: var(--accent-light); }
+.mode-card-title { font-weight: 500; font-size: 14px; color: var(--text); }
+.mode-card.active .mode-card-title { color: var(--accent); }
+.mode-card-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+/* ── 11. Estatísticas ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.stat { background: var(--surface2); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.stat.danger .stat-num { color: var(--danger); }
+.stat.good .stat-num { color: var(--accent); }
+.stat.info .stat-num { color: var(--blue); }
+
+/* ── 12. Tabela ── */
+.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+tbody td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.dup { background: var(--danger-light); }
+tbody tr.dup td { color: var(--danger); }
+
+/* ── 13. Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-dup { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger-border); }
+.badge-ok  { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
+
+/* ── 14. Botões ── */
+.btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn {
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text);
+  transition: all 0.15s;
+}
+.btn:hover { background: var(--surface2); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.primary:hover { background: #234a30; }
+.btn.primary:disabled { background: var(--accent); }
+
+/* ── 15. Alertas ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 1rem;
+  display: none;
+}
+.alert.show { display: block; }
+.alert-success { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
+.alert-danger  { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger-border); }
+.alert-info    { background: var(--blue-light);   color: var(--blue);   border: 1px solid var(--blue-border); }
+
+/* ── 16. Módulo DDD ── */
+.ddd-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ddd-col-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+}
+.ddd-col-selector select {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ddd-col-selector select:focus { border-color: var(--accent); }
+
+.ddd-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.ddd-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.bar-cell { min-width: 120px; }
+.bar-track {
+  background: var(--surface2);
+  border-radius: 3px;
+  height: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(.23,1,.32,1);
+}
+
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--blue-light);
+  color: var(--blue);
+  border: 1px solid var(--blue-border);
+}
+
+.rank-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  width: 22px;
+  text-align: right;
+}
+
+.pct-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+  min-width: 45px;
+  text-align: right;
+}
+
+.ddd-export-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.unknown-note {
+  font-size: 12px;
+  color: var(--warn);
+  font-family: 'DM Mono', monospace;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--warn-light);
+  border-radius: 6px;
+  border: 1px solid #E8D5B8;
+}
+
+.ddd-placeholder { text-align: center; padding: 4rem 2rem; color: var(--text3); }
+.ddd-placeholder-icon { font-size: 3rem; margin-bottom: 1rem; }
+.ddd-placeholder-title { font-size: 15px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+.ddd-placeholder-sub { font-size: 13px; }
+
+/* ── 17. Footer ── */
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── 18. Utilitários ── */
+.hidden { display: none !important; }
+
+/* ── 19. Animações ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.3s ease both; }
+
+/* ── 20. Responsivo ── */
+@media (max-width: 600px) {
+  .shell { padding: 1.5rem 1rem 3rem; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .ddd-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .steps { display: none; }
+  header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .mode-row { flex-direction: column; }
+  .mode-tabs { flex-direction: column; }
+}
