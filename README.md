@@ -1,5 +1,10 @@
 # 🧹 LeadClean v2.0
 
+## 📸 Imagens do sistema
+<img width="907" height="849" alt="image" src="https://github.com/user-attachments/assets/3b52e6d4-a938-4f43-8ee6-bd8083810ccd" />
+
+<img width="969" height="1119" alt="image" src="https://github.com/user-attachments/assets/ccfffbfd-19b3-47dd-9094-e8b9b1cccb2b" />
+
 ## 📌 Sobre o Projeto
 
 O **LeadClean** é uma aplicação web desenvolvida para **limpeza e análise de dados de leads**, funcionando 100% no navegador (client-side), sem necessidade de upload para servidores.
@@ -141,9 +146,5 @@ Contribuições são bem-vindas!
 Sinta-se à vontade para abrir issues ou enviar pull requests.
 
 ---
-
-<img width="907" height="849" alt="image" src="https://github.com/user-attachments/assets/3b52e6d4-a938-4f43-8ee6-bd8083810ccd" />
-
-<img width="969" height="1119" alt="image" src="https://github.com/user-attachments/assets/ccfffbfd-19b3-47dd-9094-e8b9b1cccb2b" />
 
 
