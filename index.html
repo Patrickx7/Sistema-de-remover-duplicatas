@@ -5,19 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LeadClean — Removedor de Duplicatas</title>
 <meta name="description" content="Remova leads duplicados e analise a distribuição por DDD e estado. Processamento 100% local, nenhum dado sai do seu navegador.">
-<meta name="theme-color" content="#F7F5F0">
+<meta name="theme-color" content="#123D2B">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧹</text></svg>">
 
 <!-- Aplica o tema antes do primeiro paint para não piscar branco -->
 <script>
 (function () {
-  try {
-    var t = localStorage.getItem('leadclean_theme');
-    if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', t);
-  } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
+  // Claro é o padrão: só entra no escuro se o usuário escolher explicitamente
+  var t = 'light';
+  try { t = localStorage.getItem('leadclean_theme') || 'light'; } catch (e) {}
+  document.documentElement.setAttribute('data-theme', t);
 })();
 </script>
 
@@ -40,12 +37,11 @@
   </div>
 </div>
 
-<div class="shell">
-
-  <header>
+<header class="topbar">
+  <div class="topbar-inner">
     <div>
       <div class="logo">Lead<span>Clean</span></div>
-      <div class="logo-sub">// removedor de duplicatas &amp; análise de DDD</div>
+      <div class="logo-sub">removedor de duplicatas &amp; análise de DDD</div>
     </div>
     <div class="header-right">
       <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Alternar tema claro e escuro" title="Alternar tema">
@@ -53,7 +49,10 @@
       </button>
       <div class="version-badge">v3.0 · client-side</div>
     </div>
-  </header>
+  </div>
+</header>
+
+<div class="shell">
 
   <!-- Mode Tabs -->
   <div class="mode-tabs" role="tablist" aria-label="Modo de operação">
@@ -217,7 +216,7 @@
       <div class="ddd-stats-row">
         <div class="stat"><div class="stat-icon" aria-hidden="true">📋</div><div class="stat-num" id="dddTotal">—</div><div class="stat-label">Total leads</div></div>
         <div class="stat good"><div class="stat-icon" aria-hidden="true">✓</div><div class="stat-num" id="dddIdent">—</div><div class="stat-label">Identificados</div></div>
-        <div class="stat info"><div class="stat-icon" aria-hidden="true">🗺️</div><div class="stat-num" id="dddEstados">—</div><div class="stat-label">Estados</div></div>
+        <div class="stat"><div class="stat-icon" aria-hidden="true">🗺️</div><div class="stat-num" id="dddEstados">—</div><div class="stat-label">Estados</div></div>
         <div class="stat info"><div class="stat-icon" aria-hidden="true">🏆</div><div class="stat-num" id="dddTopEstado">—</div><div class="stat-label">Estado líder</div></div>
       </div>
 

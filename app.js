@@ -207,7 +207,7 @@ function aplicarTema(tema) {
   document.documentElement.setAttribute('data-theme', tema);
   document.getElementById('themeIcon').textContent = tema === 'dark' ? '☀️' : '🌙';
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', tema === 'dark' ? '#16150F' : '#F7F5F0');
+  if (meta) meta.setAttribute('content', tema === 'dark' ? '#0B2A1E' : '#123D2B');
 }
 
 function toggleTheme() {
