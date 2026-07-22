@@ -1,72 +1,74 @@
 /* ============================================================
-   duplicata.js — LeadClean v2.0
-   Responsável por: leitura de arquivo, detecção e remoção
-   de duplicatas, exportação de leads limpos.
+   duplicata.js — LeadClean v3.0
+   Responsável por: detecção e remoção de duplicatas,
+   preview em tabela e exportação dos arquivos resultantes.
    ============================================================ */
 
 let allData = [], headers = [], selectedCols = new Set(), keepMode = 'first';
-let workbook, sheetName, dupIdxsGlobal;
+let workbook = null, sheetName = '', dupIdxsGlobal = null;
 
 /* ── Drop zone ── */
-const dropZone  = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+setupDropZone('dropZone', 'fileInput', handleFile);
 
 /* ── Leitura do arquivo ── */
 function handleFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = new Uint8Array(e.target.result);
-      workbook  = XLSX.read(data, { type: 'array' });
-      sheetName = workbook.SheetNames[0];
+  setDropLoading('dropZone', true);
 
-      const sheet = workbook.Sheets[sheetName];
-      const json  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  readSpreadsheet(file, res => {
+    setDropLoading('dropZone', false);
 
-      if (json.length < 2) { alert('Arquivo vazio ou sem linhas de dados.'); return; }
+    workbook  = res.workbook;
+    sheetName = res.sheetName;
+    headers   = res.headers;
+    allData   = res.rows;
+    selectedCols.clear();
+    dupIdxsGlobal = null;
 
-      headers  = json[0].map((h, i) => h !== '' ? String(h) : `Coluna_${i + 1}`);
-      allData  = json.slice(1).filter(r => r.some(c => c !== ''));
-      selectedCols.clear();
+    document.getElementById('dropZone').classList.add('hidden');
+    document.getElementById('fileLoaded').classList.remove('hidden');
+    document.getElementById('fileName').textContent =
+      `${file.name} · ${allData.length} linhas · ${headers.length} colunas`;
 
-      document.getElementById('dropZone').classList.add('hidden');
-      document.getElementById('fileLoaded').classList.remove('hidden');
-      document.getElementById('fileName').textContent =
-        `${file.name} · ${allData.length} linhas · ${headers.length} colunas`;
+    document.getElementById('cardConfig').classList.remove('hidden');
+    document.getElementById('cardConfig').classList.add('fade-up');
+    document.getElementById('cardResults').classList.add('hidden');
 
-      document.getElementById('cardConfig').classList.remove('hidden');
-      document.getElementById('cardConfig').classList.add('fade-up');
-      document.getElementById('cardResults').classList.add('hidden');
-
-      renderCols();
-      setStep(2);
-    } catch (err) {
-      alert('Erro ao ler o arquivo: ' + err.message);
-    }
-  };
-  reader.readAsArrayBuffer(file);
+    renderCols();
+    setStep(2);
+    showToast(`${allData.length.toLocaleString('pt-BR')} linhas carregadas`, 'success');
+  }, err => {
+    setDropLoading('dropZone', false);
+    document.getElementById('fileInput').value = '';
+    showToast('Erro ao ler o arquivo: ' + err.message, 'danger', 6000);
+  });
 }
 
 /* ── Reset ── */
 function resetFile() {
-  fileInput.value = '';
+  document.getElementById('fileInput').value = '';
+
+  allData = [];
+  headers = [];
+  selectedCols.clear();
+  workbook = null;
+  sheetName = '';
+  dupIdxsGlobal = null;
+
   document.getElementById('dropZone').classList.remove('hidden');
   document.getElementById('fileLoaded').classList.add('hidden');
   document.getElementById('cardConfig').classList.add('hidden');
   document.getElementById('cardResults').classList.add('hidden');
-  selectedCols.clear();
-  allData  = [];
-  headers  = [];
+
+  document.getElementById('colsGrid').innerHTML  = '';
+  document.getElementById('tableWrap').innerHTML = '';
+  document.getElementById('tableNote').textContent = '';
+  document.getElementById('onlyDups').checked = false;
+  ['stTotal', 'stDup', 'stClean', 'stPct'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  document.getElementById('btnExport').disabled     = true;
+  document.getElementById('btnExportDups').disabled = true;
+
   setStep(1);
 }
 
@@ -78,19 +80,26 @@ function renderCols() {
   grid.innerHTML = '';
 
   headers.forEach((h, i) => {
-    const chip = document.createElement('div');
+    const chip = document.createElement('button');
+    chip.type = 'button';
     chip.className = 'col-chip';
-    chip.innerHTML = `<span class="check">✓</span>${h}`;
+    chip.setAttribute('aria-pressed', 'false');
+
+    const check = document.createElement('span');
+    check.className = 'check';
+    check.textContent = '✓';
+    chip.appendChild(check);
+    // textContent evita que um cabeçalho com "<" ou aspas vire markup
+    chip.appendChild(document.createTextNode(h));
+
     chip.onclick = () => {
-      if (selectedCols.has(i)) {
-        selectedCols.delete(i);
-        chip.classList.remove('active');
-      } else {
-        selectedCols.add(i);
-        chip.classList.add('active');
-      }
+      const ativo = selectedCols.has(i);
+      if (ativo) selectedCols.delete(i); else selectedCols.add(i);
+      chip.classList.toggle('active', !ativo);
+      chip.setAttribute('aria-pressed', String(!ativo));
       document.getElementById('btnAnalyze').disabled = selectedCols.size === 0;
     };
+
     grid.appendChild(chip);
   });
 
@@ -100,15 +109,41 @@ function renderCols() {
 /* ── Modo de retenção (primeira/última ocorrência) ── */
 function setMode(m) {
   keepMode = m;
-  document.getElementById('modeFirst').className = 'mode-card' + (m === 'first' ? ' active' : '');
-  document.getElementById('modeLast').className  = 'mode-card' + (m === 'last'  ? ' active' : '');
+  [['modeFirst', 'first'], ['modeLast', 'last']].forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    el.classList.toggle('active', m === val);
+    el.setAttribute('aria-pressed', String(m === val));
+  });
+}
+
+/* ── Reanalisar ao trocar as opções de normalização ── */
+function onNormChange() {
+  if (dupIdxsGlobal) analyze();
+}
+
+/* ── Normalização de valor para comparação ──
+   Sem isso "João  Silva" e "joao silva" contam como leads distintos. */
+function normalizeValue(v) {
+  let s = String(v ?? '').trim().toLowerCase();
+  if (!s) return '';
+
+  if (document.getElementById('normPhone').checked) {
+    const digitos = s.replace(/\D/g, '');
+    // Só trata como telefone se o valor for basicamente um número formatado
+    if (digitos.length >= 8 && /^[\d\s+()\-.]+$/.test(s)) return digitos;
+  }
+
+  if (document.getElementById('normAccents').checked) {
+    s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    s = s.replace(/\s+/g, ' ');
+  }
+
+  return s;
 }
 
 /* ── Chave de unicidade ── */
 function getKey(row) {
-  return [...selectedCols]
-    .map(i => String(row[i] ?? '').toLowerCase().trim())
-    .join('⟨|⟩');
+  return [...selectedCols].map(i => normalizeValue(row[i])).join('⟨|⟩');
 }
 
 /* ── Análise de duplicatas ── */
@@ -137,10 +172,10 @@ function analyze() {
   const clean = total - dups;
   const pct   = total > 0 ? Math.round((dups / total) * 100) : 0;
 
-  document.getElementById('stTotal').textContent = total.toLocaleString('pt-BR');
-  document.getElementById('stDup').textContent   = dups.toLocaleString('pt-BR');
-  document.getElementById('stClean').textContent = clean.toLocaleString('pt-BR');
-  document.getElementById('stPct').textContent   = pct + '%';
+  animateCount('stTotal', total);
+  animateCount('stDup',   dups);
+  animateCount('stClean', clean);
+  animateCount('stPct',   pct, '%');
 
   const alertEl = document.getElementById('alertMsg');
   if (dups === 0) {
@@ -148,67 +183,113 @@ function analyze() {
     alertEl.textContent = '✓ Nenhuma duplicata encontrada! Seu arquivo já está limpo.';
   } else {
     alertEl.className   = 'alert show alert-danger';
-    alertEl.textContent = `⚠ ${dups} linha(s) duplicada(s) encontrada(s) e marcadas em vermelho abaixo.`;
+    alertEl.textContent = `⚠ ${dups.toLocaleString('pt-BR')} linha(s) duplicada(s) encontrada(s) e marcadas em vermelho abaixo.`;
   }
 
-  renderTable(dupIdxs);
+  renderTable();
 
-  document.getElementById('btnExport').disabled = dups === 0;
+  document.getElementById('btnExport').disabled     = false;
+  document.getElementById('btnExportDups').disabled = dups === 0;
   document.getElementById('cardResults').classList.remove('hidden');
   document.getElementById('cardResults').classList.add('fade-up');
-  document.getElementById('cardResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  setStep(dups === 0 ? 3 : 4);
+  document.getElementById('cardResults').scrollIntoView({
+    behavior: REDUCED_MOTION ? 'auto' : 'smooth',
+    block: 'start',
+  });
+  setStep(3);
+}
+
+/* ── Quais colunas mostrar no preview ──
+   As colunas usadas como chave vêm primeiro: sem isso o usuário pode
+   ver uma linha marcada como duplicada sem enxergar o motivo. */
+function colunasVisiveis() {
+  const MAX = 8;
+  const sel = [...selectedCols].sort((a, b) => a - b);
+  const cols = sel.slice(0, MAX);
+  for (let i = 0; i < headers.length && cols.length < MAX; i++) {
+    if (!cols.includes(i)) cols.push(i);
+  }
+  return cols;
 }
 
 /* ── Renderizar tabela de preview ── */
-function renderTable(dupIdxs) {
-  const maxRows = 80;
-  const maxCols = Math.min(headers.length, 8);
-  const colsArr = headers.slice(0, maxCols);
+function renderTable() {
+  if (!dupIdxsGlobal) return;
 
-  let html = '<table><thead><tr><th style="width:80px">Status</th>';
-  colsArr.forEach(h => { html += `<th>${h}</th>`; });
+  const maxRows  = 80;
+  const soDups   = document.getElementById('onlyDups').checked;
+  const cols     = colunasVisiveis();
+  const escondidas = headers.length - cols.length;
+
+  const linhas = [];
+  allData.forEach((row, idx) => {
+    const isDup = dupIdxsGlobal.has(idx);
+    if (soDups && !isDup) return;
+    linhas.push({ row, idx, isDup });
+  });
+
+  const visiveis = linhas.slice(0, maxRows);
+
+  let html = '<table><thead><tr><th class="col-status">Status</th>';
+  cols.forEach(ci => {
+    const chave = selectedCols.has(ci);
+    html += `<th class="${chave ? 'is-key' : ''}">${escapeHtml(headers[ci])}</th>`;
+  });
   html += '</tr></thead><tbody>';
 
-  allData.slice(0, maxRows).forEach((row, idx) => {
-    const isDup = dupIdxs.has(idx);
+  visiveis.forEach(({ row, isDup }) => {
     html += `<tr class="${isDup ? 'dup' : ''}">`;
     html += `<td><span class="badge ${isDup ? 'badge-dup' : 'badge-ok'}">${isDup ? '✕ dup' : '✓ ok'}</span></td>`;
-    colsArr.forEach((_, ci) => {
-      const v = row[ci] ?? '';
-      html += `<td title="${v}">${v}</td>`;
+    cols.forEach(ci => {
+      const v = escapeHtml(row[ci] ?? '');
+      html += `<td class="${selectedCols.has(ci) ? 'is-key' : ''}" title="${v}">${v}</td>`;
     });
     html += '</tr>';
   });
 
   html += '</tbody></table>';
+
+  if (linhas.length === 0) {
+    html = '<div class="table-empty">Nenhuma linha para exibir com esse filtro.</div>';
+  }
+
   document.getElementById('tableWrap').innerHTML = html;
 
-  const noteEl = document.getElementById('tableNote');
-  noteEl.textContent = allData.length > maxRows
-    ? `Mostrando ${maxRows} de ${allData.length} linhas · o arquivo exportado conterá todos os registros únicos`
-    : '';
+  const notas = [];
+  if (linhas.length > maxRows) {
+    notas.push(`Mostrando ${maxRows} de ${linhas.length.toLocaleString('pt-BR')} linhas · o arquivo exportado conterá todos os registros`);
+  }
+  if (escondidas > 0) {
+    notas.push(`${escondidas} coluna(s) ocultada(s) no preview · o export mantém todas`);
+  }
+  document.getElementById('tableNote').textContent = notas.join(' · ');
 }
 
-/* ── Exportar arquivo limpo ── */
-function exportClean() {
-  if (!dupIdxsGlobal) return;
-
-  const cleanRows = allData.filter((_, i) => !dupIdxsGlobal.has(i));
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...cleanRows]);
-
-  // Negrito no cabeçalho
-  const range = XLSX.utils.decode_range(ws['!ref']);
-  for (let c = range.s.c; c <= range.e.c; c++) {
-    const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
-    if (cell) cell.s = { font: { bold: true } };
-  }
+/* ── Exportação ──
+   Nota: a build community do SheetJS ignora estilos de célula
+   (negrito etc.); apenas a largura de coluna é aplicada. */
+function baixarPlanilha(linhas, nomeAba, nomeArquivo) {
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
   ws['!cols'] = headers.map(() => ({ wch: 20 }));
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, sheetName || 'Leads');
-  XLSX.writeFile(wb, 'leads_limpos.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, nomeAba);
+  XLSX.writeFile(wb, nomeArquivo);
+}
+
+function exportClean() {
+  if (!dupIdxsGlobal) return;
+  const limpos = allData.filter((_, i) => !dupIdxsGlobal.has(i));
+  baixarPlanilha(limpos, sheetName || 'Leads', 'leads_limpos.xlsx');
+  showToast(`${limpos.length.toLocaleString('pt-BR')} leads únicos exportados`, 'success');
   setStep(4);
+}
+
+function exportDups() {
+  if (!dupIdxsGlobal || dupIdxsGlobal.size === 0) return;
+  const dups = allData.filter((_, i) => dupIdxsGlobal.has(i));
+  baixarPlanilha(dups, 'Duplicatas', 'leads_duplicados.xlsx');
+  showToast(`${dups.length.toLocaleString('pt-BR')} duplicatas exportadas para auditoria`, 'info');
 }
 
 /* ── Indicador de steps ── */

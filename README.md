@@ -1,4 +1,4 @@
-# 🧹 LeadClean v2.0
+# 🧹 LeadClean v3.0
 
 ## 📸 Imagens do sistema
 <img width="907" height="849" alt="image" src="https://github.com/user-attachments/assets/3b52e6d4-a938-4f43-8ee6-bd8083810ccd" />
@@ -79,13 +79,11 @@ cd Sistema-de-remover-duplicatas
 
 ### 3. Execute o projeto
 
-Basta abrir o arquivo:
+Dê duplo clique em `index.html`, ou sirva a pasta localmente:
 
 ```bash
-leads-dedup.html
+python -m http.server 8000
 ```
-
-Ou dê duplo clique no arquivo.
 
 ---
 
@@ -93,11 +91,12 @@ Ou dê duplo clique no arquivo.
 
 ```
 📁 LeadClean
- ┣ 📄 leads-dedup.html   # Interface principal
- ┣ 📄 style.css          # Estilização
- ┣ 📄 app.js             # Controle de abas
+ ┣ 📄 index.html         # Interface principal
+ ┣ 📄 style.css          # Estilização (temas claro e escuro)
+ ┣ 📄 splash.js          # Tela de abertura
+ ┣ 📄 app.js             # Utilitários, abas e tema
  ┣ 📄 duplicata.js       # Lógica de remoção de duplicatas
- ┣ 📄 ddd.js             # Análise de DDD e estados
+ ┣ 📄 ddd.js             # Análise de DDD, estados e gráficos
  ┗ 📄 README.md
 ```
 
@@ -124,11 +123,34 @@ Este projeto foi desenvolvido com foco em:
 
 ---
 
+## 🆕 Novidades da v3.0
+
+* **Tela de abertura** com saudação por horário e assinatura do autor
+* **Tema escuro** com alternância no cabeçalho (preferência salva)
+* **Cartograma do Brasil**, gráfico de barras e donut por região na aba de DDD
+* **Correção crítica**: telefones com código do país (`+55`) eram lidos como DDD 55
+  e contabilizados como Rio Grande do Sul — agora o prefixo é removido corretamente
+* Normalização opcional de acentos, espaços e máscaras de telefone na comparação
+* Exportação das duplicatas removidas, para auditoria
+* Leitura de CSV em Windows-1252 (acentos de planilhas salvas em ANSI)
+* Navegação completa por teclado e conteúdo da planilha sempre escapado
+
+---
+
+## ⚠️ Limitações conhecidas
+
+* A build community do SheetJS **não aplica estilos de célula** (negrito, cores) no
+  arquivo exportado — apenas a largura das colunas é preservada.
+* Apenas a primeira aba (worksheet) da planilha é lida.
+* O preview em tela mostra até 80 linhas e 8 colunas; o arquivo exportado é sempre completo.
+
+---
+
 ## 📈 Melhorias Futuras
 
-* Upload de arquivos maiores com otimização
+* Upload de arquivos maiores com otimização (Web Worker)
+* Seletor de aba/worksheet da planilha
 * Filtros avançados de análise
-* Gráficos (charts) de distribuição
 * API backend opcional
 * Versão em React
 
